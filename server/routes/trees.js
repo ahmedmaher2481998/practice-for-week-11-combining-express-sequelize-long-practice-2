@@ -7,6 +7,31 @@ const router = express.Router();
 // Your code here
 const { Tree } = require("../db/models");
 
+const bodyToTree = (req, res, next) => {
+	const {
+		name: tree,
+		height: heightFt,
+		location: location,
+		size: groundCircumferenceFt,
+	} = req.body;
+	if (tree) {
+		req.body.tree = tree;
+		delete req.body.name;
+	}
+	if (heightFt) {
+		delete req.body.height;
+		req.body.heightFt = heightFt;
+	}
+	if (location) {
+		delete req.body.location;
+		req.body.location = location;
+	}
+	if (groundCircumferenceFt) {
+		delete req.body.size;
+		req.body.groundCircumferenceFt = groundCircumferenceFt;
+	}
+	next();
+};
 /**
  * INTERMEDIATE BONUS PHASE 1 (OPTIONAL), Step A:
  *   Import Op to perform comparison operations in WHERE clauses
@@ -28,11 +53,15 @@ router.get("/", async (req, res, next) => {
 	let trees = [];
 
 	// Your code here
-	trees = await Tree.findAll({
-		attributes: ["id", "tree", "heightFt"],
-		order: [["heightFt", "DESC"]],
-	});
-	res.json(trees);
+	try {
+		trees = await Tree.findAll({
+			attributes: ["id", "tree", "heightFt"],
+			order: [["id", "DESC"]],
+		});
+		res.json(trees);
+	} catch (err) {
+		res.status(500).json(err.message);
+	}
 });
 
 /**
@@ -49,7 +78,18 @@ router.get("/:id", async (req, res, next) => {
 
 	try {
 		// Your code here
-
+		tree = await Tree.findOne({
+			attributes: [
+				"id",
+				"tree",
+				"location",
+				"heightFt",
+				"groundCircumferenceFt",
+			],
+			where: {
+				id: req.params.id,
+			},
+		});
 		if (tree) {
 			res.json(tree);
 		} else {
@@ -86,11 +126,28 @@ router.get("/:id", async (req, res, next) => {
  *   - Property: data
  *     - Value: object (the new tree)
  */
-router.post("/", async (req, res, next) => {
+router.post("/", bodyToTree, async (req, res, next) => {
 	try {
+		const { tree, heightFt, location, groundCircumferenceFt } = req.body;
+		const newTree = Tree.build({
+			tree,
+			heightFt,
+			location,
+			groundCircumferenceFt,
+		});
+		const isValid = await newTree.validate();
+		console.log("*****" + isValid);
+		if (isValid) {
+			await newTree.save();
+			await newTree.reload();
+		} else {
+			throw new Error("Not valid Tree...");
+		}
+
 		res.json({
 			status: "success",
 			message: "Successfully created new tree",
+			data: newTree,
 		});
 	} catch (err) {
 		next({
@@ -125,6 +182,9 @@ router.post("/", async (req, res, next) => {
  */
 router.delete("/:id", async (req, res, next) => {
 	try {
+		const tree = await Tree.findOne({ where: { id: req.params.id } });
+		if (tree) tree.destroy();
+		else throw new Error("Not found in The database");
 		res.json({
 			status: "success",
 			message: `Successfully removed tree ${req.params.id}`,
@@ -174,9 +234,20 @@ router.delete("/:id", async (req, res, next) => {
  *   - Property: details
  *     - Value: Tree not found
  */
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", bodyToTree, async (req, res, next) => {
 	try {
 		// Your code here
+		console.log(req.body);
+		await Tree.update(req.body, {
+			where: { id: req.params.id },
+			validate: true,
+		});
+		const newTree = await Tree.findOne({ where: { id: req.params.id } });
+		res.json({
+			status: "Success",
+			message: "Successfully updated tree",
+			data: newTree,
+		});
 	} catch (err) {
 		next({
 			status: "error",
