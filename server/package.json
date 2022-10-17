@@ -1,27 +1,35 @@
 {
-  "name": "sequelize-long-practice-1",
-  "version": "1.0.0",
-  "description": "Practice Sequelize Basics",
-  "main": "app.js",
-  "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
-  },
-  "keywords": [
-    "Express",
-    "Sequelize"
-  ],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "sequelize": "^6.6.5",
-    "sequelize-cli": "^6.2.0",
-    "sqlite3": "^5.0.2"
-  },
-  "devDependencies": {
-    "dotenv-cli": "^5.1.0",
-    "nodemon": "^2.0.15"
-  }
+	"name": "sequelize-long-practice-1",
+	"version": "1.0.0",
+	"description": "Practice Sequelize Basics",
+	"main": "app.js",
+	"scripts": {
+		"start": "node app.js",
+		"dev": "nodemon app.js",
+		"SA": "npx sequelize db:seed:all",
+		"USA": "npx sequelize db:seed:undo:all",
+		"M": "npx sequelize db:migrate",
+		"UM": "npx sequelize db:migrate:undo:all",
+		"NM": "npx sequelize model:generate ---name $name --attributes $attributes",
+		"schema": "sqlite3 db/dev.db '.schema' ",
+		"tables": "sqlite3 db/dev.db '.tables' ",
+		"C": "sqlite3 db/dev.db "
+	},
+	"keywords": [
+		"Express",
+		"Sequelize"
+	],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"dotenv": "^10.0.0",
+		"express": "^4.17.1",
+		"sequelize": "^6.6.5",
+		"sequelize-cli": "^6.2.0",
+		"sqlite3": "^5.0.2"
+	},
+	"devDependencies": {
+		"dotenv-cli": "^5.1.0",
+		"nodemon": "^2.0.15"
+	}
 }
