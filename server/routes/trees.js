@@ -271,7 +271,15 @@ router.put("/:id", bodyToTree, async (req, res, next) => {
  *   - Ordered by the heightFt from tallest to shortest
  */
 router.get("/search/:value", async (req, res, next) => {
-	let trees = [];
+	let trees = await Tree.findAll({
+		attributes: ["id", "tree", "heightFt"],
+		order: [["heightFt", "desc"]],
+		where: {
+			tree: {
+				[Op.like]: `%${req.params.value}%`,
+			},
+		},
+	});
 
 	res.json(trees);
 });
