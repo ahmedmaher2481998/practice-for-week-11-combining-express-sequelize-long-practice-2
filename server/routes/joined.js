@@ -1,9 +1,9 @@
 // Instantiate router - DO NOT MODIFY
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // Import models - DO NOT MODIFY
-const { Insect, Tree } = require('../db/models');
+const { Insect, Tree } = require("../db/models");
 const { Op } = require("sequelize");
 
 /**
@@ -19,14 +19,20 @@ const { Op } = require("sequelize");
  *   - Insect properties: id, name
  *   - Insects for each tree ordered alphabetically by name
  */
-router.get('/trees-insects', async (req, res, next) => {
-    let trees = [];
+router.get("/trees-insects", async (req, res, next) => {
+	let trees = await Tree.findAll({
+		attributes: ["id", "tree", "heightFt", "location"],
+		include: {
+			model: Insect,
+			// nested: false,
+			attributes: ["id", "name"],
 
-    trees = await Tree.findAll({
-        attributes: ['id', 'tree', 'location', 'heightFt'],
-    });
+			order: [["name"]],
+		},
+		order: [["heightFt", "DESC"]],
+	});
 
-    res.json(trees);
+	res.json(trees);
 });
 
 /**
@@ -42,23 +48,29 @@ router.get('/trees-insects', async (req, res, next) => {
  *   - Tree properties: id, tree
  *   - Trees ordered alphabetically by tree
  */
-router.get('/insects-trees', async (req, res, next) => {
-    let payload = [];
+router.get("/insects-trees", async (req, res, next) => {
+	let payload = [];
 
-    const insects = await Insect.findAll({
-        attributes: ['id', 'name', 'description'],
-        order: [ ['name'] ],
-    });
-    for (let i = 0; i < insects.length; i++) {
-        const insect = insects[i];
-        payload.push({
-            id: insect.id,
-            name: insect.name,
-            description: insect.description,
-        });
-    }
+	const insects = await Insect.findAll({
+		attributes: ["id", "name", "description"],
+		order: [["name"]],
+	});
+	for (let i = 0; i < insects.length; i++) {
+		const insect = insects[i];
+		const trees = await insect.getTrees({
+			order: ["tree"],
+			attributes: ["id", "tree"],
+		});
+		console.log("insect id ***", insect.id);
+		payload.push({
+			id: insect.id,
+			name: insect.name,
+			description: insect.description,
+			trees,
+		});
+	}
 
-    res.json(payload);
+	res.json(payload);
 });
 
 /**
