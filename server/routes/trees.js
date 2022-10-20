@@ -237,7 +237,7 @@ router.delete("/:id", async (req, res, next) => {
 router.put("/:id", bodyToTree, async (req, res, next) => {
 	try {
 		// Your code here
-		console.log(req.body);
+
 		await Tree.update(req.body, {
 			where: { id: req.params.id },
 			validate: true,
